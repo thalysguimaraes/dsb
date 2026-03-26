@@ -1,88 +1,153 @@
-# DSB
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="DSB icon" />
+</p>
 
-DSB is a spec and reference CLI for organizing design sandboxes for AI-assisted design work.
+# DSB — Design Sandbox
 
-It solves a simple problem: design sessions usually start from random directories, which makes the context hard to recover later. DSB gives each project a durable home and a structured `AGENTS.md` file that agents can use immediately.
+If you're designing inside an existing codebase, the repo is your working directory. Session history, agent state, `/resume`, all just work. But a lot of design work doesn't live in a repo yet. New products, early exploration, design system iterations, things that haven't become code. Those sessions start from nowhere.
 
-## Install
+DSB gives that work a place to happen. You `cd` into a sandbox, open Claude Code or Codex, and everything that happens in that session stays in that directory: conversation history, `.claude/` state, decisions. Come back tomorrow, `/resume`, pick up where you left off. The context accumulates like it does in a code repo, because the sandbox *is* the repo.
+
+## Why this matters now
+
+AI agents can write directly to design canvases. Figma through MCP, Paper as a full agent-native design tool, more showing up every month. But a writable canvas without a persistent working directory is just a sketchpad. The session ends and the context is gone.
+
+DSB is for design work that doesn't have a codebase to call home yet.
+
+- **History accumulates.** Every session in the sandbox builds on the last. `/resume` just works.
+- **Context is portable.** The sandbox works with any agent that reads the filesystem. Claude Code, Codex, whatever ships next.
+- **No platform needed.** It's a directory. `ls` is your dashboard.
+
+## What DSB is
+
+DSB is a **spec** and a **reference CLI**.
+
+The spec defines the convention: directory layout, `AGENTS.md` format, sandbox lifecycle. It's small enough that anyone can reimplement it, or that an agent can scaffold a sandbox just from reading the spec. The convention is the product. The CLI is one way to use it.
+
+The CLI, `dsb`, makes the convention practical:
 
 ```bash
-npm install
-npm link
+npm install && npm link
 ```
-
-This exposes the local reference CLI as `dsb`.
-
-Without linking, you can run the local binary directly:
 
 ```bash
-node ./bin/dsb.js --help
+dsb init mobile-settings-refresh
 ```
 
-## What DSB Defines
+`dsb init` creates the sandbox directory, walks you through interactive onboarding (project name, description, Figma links, colors, typography, constraints, past decisions, stack), and generates an `AGENTS.md` with everything the agent needs on the first session. Skip anything you don't have yet.
 
-- A filesystem convention for design sandboxes
-- A normative `AGENTS.md` format
-- A reference CLI named `dsb`
+```bash
+dsb list                   # discover existing sandboxes
+```
 
-## Directory Layout
+## Directory layout
 
 ```text
-<your-workspace>/
+your-workspace/
 ├── apps/
 ├── repos/
 └── design/
-    └── <project>/
-        ├── AGENTS.md
-        └── .claude/
+    └── mobile-settings-refresh/
+        ├── AGENTS.md      ← the context file
+        └── .claude/       ← created by the agent, not by you
 ```
 
-## Reference Commands
-
-`dsb init <sandbox-path>`
-
-- creates the sandbox directory
-- runs onboarding to collect project context
-- writes `AGENTS.md`
-- supports `--force` to overwrite an existing `AGENTS.md` without an extra prompt
-
-`dsb list`
-
-- lists existing sandboxes
-- shows sandbox path and location
-
-By default the CLI detects the nearest `design/` directory from your current location. If none exists, it creates and uses `<current-directory>/design`.
-
-Set `DSB_HOME` only when you want to override that behavior explicitly.
+DSB auto-detects the nearest `design/` directory. Set `DSB_HOME` to override.
 
 ## `AGENTS.md`
 
-The generated `AGENTS.md` contains:
+The sandbox's seed file. Markdown with YAML frontmatter that gives the agent starting context so the first message in a new session isn't "here's the project background." Two required fields (`name`, `description`) and optional fields for everything else:
 
-- required fields: `name`, `description`
-- optional fields: `context`, `figma_files`, `design_system`, `colors`, `typography`, `components`, `resources`, `constraints`, `decisions`, `stack`
+`context` · `figma_files` · `design_system` · `colors` · `typography` · `components` · `resources` · `constraints` · `decisions` · `stack`
 
-Fields with no useful value are omitted. The file is meant to be useful for both humans and agents.
+Empty fields are omitted. The file stays clean.
 
-## Typical Workflow
+<details>
+<summary>Example: Mobile Settings Refresh</summary>
 
-1. `cd` into the workspace you want to use
-2. Create a sandbox with `dsb init mobile-settings-refresh`
-3. Fill in the project context during onboarding
-4. Open the sandbox when starting a design session
-5. Reuse the same sandbox for follow-up sessions
+```yaml
+---
+name: Mobile Settings Refresh
+description: Refresh the settings experience to make navigation clearer.
+context: Product Surface
+figma_files:
+  - https://www.figma.com/design/example-mobile-settings-refresh
+design_system: Core UI
+colors:
+  - "#111827"
+  - "#2563EB"
+  - "#F9FAFB"
+typography:
+  - Inter
+components:
+  - List item
+  - Toggle
+  - Section header
+constraints:
+  - Keep the information architecture familiar to returning users.
+  - Prioritize mobile readability.
+decisions:
+  - Surface account-level actions above device-level settings.
+stack:
+  - React Native
+  - Expo
+---
+```
 
-Nested paths are also valid when you want more structure, for example `dsb init product/mobile-settings-refresh`.
+</details>
 
-## Examples
+<details>
+<summary>Example: Design System Update</summary>
 
-- [Mobile settings refresh sandbox](examples/mobile-settings-refresh-agents.md)
-- [Design system update sandbox](examples/design-system-update-agents.md)
+```yaml
+---
+name: Design System Update
+description: Buttons, form fields, and documentation. A focused DS iteration.
+context: Platform Foundations
+figma_files:
+  - https://www.figma.com/design/example-design-system-update
+design_system: Core UI
+colors:
+  - "#0F172A"
+  - "#F8FAFC"
+  - "#14B8A6"
+typography:
+  - Instrument Sans
+components:
+  - Button
+  - Input
+  - Select
+constraints:
+  - Avoid breaking existing component APIs.
+  - Keep tokens backwards-compatible where possible.
+decisions:
+  - Ship buttons and fields first, then update the documentation pages.
+stack:
+  - React
+  - TypeScript
+---
+```
+
+</details>
+
+## Workflow
+
+1. `dsb init <project-name>`, answer the prompts
+2. `cd` into the sandbox
+3. Open Claude Code, Codex, or your agent of choice
+4. Work. Close the session.
+5. Come back next week. `cd` into the same sandbox, `/resume`.
+
+Nested paths work too: `dsb init product/mobile-settings-refresh`.
 
 ## Scope
 
-DSB is about context, not orchestration. It does not manage design versioning, sync external tools, or automate agent workflows.
+DSB gives you a place to work from, nothing more. It doesn't version design artifacts, sync with Figma, or automate agent workflows. It's just a convention, so it sits underneath whatever tools and agents you already use.
 
-## Status
+## Spec
 
-This repository currently documents the convention and serves as a reference for the CLI implementation.
+The full specification is in [SPEC.md](SPEC.md). It's self-contained. You can reimplement `dsb` in any language, or skip the CLI entirely and follow the convention by hand.
+
+## License
+
+[MIT](LICENSE) — Thalys Guimaraes
