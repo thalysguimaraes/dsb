@@ -28,7 +28,9 @@ node ./bin/dsb.js --help
 ## Directory Layout
 
 ```text
-~/development/
+<your-workspace>/
+├── apps/
+├── repos/
 └── design/
     └── <project>/
         ├── AGENTS.md
@@ -49,7 +51,9 @@ node ./bin/dsb.js --help
 - lists existing sandboxes
 - shows sandbox path and location
 
-By default the CLI uses `~/development/design` as its root. Set `DSB_HOME` to override that path during testing or for a custom local setup.
+By default the CLI detects the nearest `design/` directory from your current location. If none exists, it creates and uses `<current-directory>/design`.
+
+Set `DSB_HOME` only when you want to override that behavior explicitly.
 
 ## `AGENTS.md`
 
@@ -62,10 +66,13 @@ Fields with no useful value are omitted. The file is meant to be useful for both
 
 ## Typical Workflow
 
-1. Create a sandbox with `dsb init mobile-settings-refresh`
-2. Fill in the project context during onboarding
-3. Open the sandbox when starting a design session
-4. Reuse the same sandbox for follow-up sessions
+1. `cd` into the workspace you want to use
+2. Create a sandbox with `dsb init mobile-settings-refresh`
+3. Fill in the project context during onboarding
+4. Open the sandbox when starting a design session
+5. Reuse the same sandbox for follow-up sessions
+
+Nested paths are also valid when you want more structure, for example `dsb init product/mobile-settings-refresh`.
 
 ## Examples
 

@@ -70,7 +70,7 @@ export async function initCommand(args, io) {
     return 1;
   }
 
-  const root = resolveSandboxesRoot(io.env);
+  const root = resolveSandboxesRoot(io.env, io.cwd);
   const sandboxPath = getSandboxPath(root, parsedTarget);
   const agentsPath = path.join(sandboxPath, "AGENTS.md");
   const prompts = createPromptSession({ input: io.stdin, output: io.stdout });

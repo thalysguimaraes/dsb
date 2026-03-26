@@ -1,6 +1,6 @@
 {
   "name": "dsb",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Reference CLI for organizing design sandboxes for AI agents.",
   "type": "module",
   "bin": {

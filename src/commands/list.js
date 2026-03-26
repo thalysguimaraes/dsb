@@ -26,7 +26,7 @@ export async function listCommand(args, io) {
     return 1;
   }
 
-  const root = resolveSandboxesRoot(io.env);
+  const root = resolveSandboxesRoot(io.env, io.cwd);
   const sandboxes = await findSandboxes(root);
 
   if (sandboxes.length === 0) {

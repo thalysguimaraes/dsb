@@ -1,7 +1,8 @@
+import { statSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { DEFAULT_DSB_HOME_SEGMENTS, DSB_HOME_ENV } from "../constants.js";
+import { DSB_HOME_ENV } from "../constants.js";
 
 function expandHome(input, homedir) {
   if (input === "~") {
@@ -15,11 +16,52 @@ function expandHome(input, homedir) {
   return input;
 }
 
-export function resolveSandboxesRoot(env = process.env, homedir = os.homedir()) {
+function directoryExists(targetPath) {
+  try {
+    return statSync(targetPath).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function findNearestDesignRoot(cwd, homedir) {
+  let currentPath = path.resolve(cwd);
+  const homePath = path.resolve(homedir);
+
+  while (true) {
+    if (path.basename(currentPath) === "design") {
+      return currentPath;
+    }
+
+    const candidate = path.join(currentPath, "design");
+    if (directoryExists(candidate)) {
+      return candidate;
+    }
+
+    const parentPath = path.dirname(currentPath);
+    if (parentPath === currentPath || currentPath === homePath) {
+      break;
+    }
+
+    currentPath = parentPath;
+  }
+
+  return null;
+}
+
+export function resolveSandboxesRoot(env = process.env, cwd = process.cwd(), homedir = os.homedir()) {
   const configuredRoot = env[DSB_HOME_ENV]?.trim();
-  return configuredRoot
-    ? path.resolve(expandHome(configuredRoot, homedir))
-    : path.join(homedir, ...DEFAULT_DSB_HOME_SEGMENTS);
+
+  if (configuredRoot) {
+    return path.resolve(expandHome(configuredRoot, homedir));
+  }
+
+  const detectedRoot = findNearestDesignRoot(cwd, homedir);
+  if (detectedRoot) {
+    return detectedRoot;
+  }
+
+  return path.join(path.resolve(cwd), "design");
 }
 
 export function getSandboxPath(root, sandboxPath) {

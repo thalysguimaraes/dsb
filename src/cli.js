@@ -16,7 +16,7 @@ function renderHelp() {
     "  dsb init --force             Overwrite an existing AGENTS.md without prompting",
     "",
     "Environment:",
-    "  DSB_HOME                     Override the default root (defaults to ~/development/design)"
+    "  DSB_HOME                     Override the detected design root"
   ].join("\n");
 }
 
@@ -24,6 +24,7 @@ export async function run(
   argv = process.argv.slice(2),
   io = {
     env: process.env,
+    cwd: process.cwd(),
     stdin: process.stdin,
     stdout: process.stdout,
     stderr: process.stderr

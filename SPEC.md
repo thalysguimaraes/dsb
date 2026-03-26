@@ -1,6 +1,6 @@
 # DSB Specification
 
-Version: `0.2.0`
+Version: `0.2.1`
 
 ## 1. Purpose
 
@@ -23,18 +23,22 @@ DSB does not standardize design workflow, artifact versioning, MCP configuration
 
 ## 3. Root Directory Convention
 
-The default root is:
+The default root behavior is:
 
 ```text
-~/development/design
+<current-working-directory>/design
 ```
 
-Implementations MAY allow the root to be overridden via configuration or environment variable, but the default layout MUST remain compatible with this structure.
+Implementations MAY allow the root to be overridden via configuration or environment variable.
+
+If a `design/` directory already exists in the current directory or in a direct ancestor, implementations SHOULD prefer that existing directory instead of creating a new one deeper in the tree.
 
 The canonical directory structure is:
 
 ```text
-~/development/
+<your-workspace>/
+├── apps/
+├── repos/
 └── design/
     └── <project>/
         ├── AGENTS.md

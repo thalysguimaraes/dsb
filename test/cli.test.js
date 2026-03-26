@@ -33,7 +33,7 @@ test("run prints version", async () => {
   const exitCode = await run(["--version"], io);
 
   assert.equal(exitCode, 0);
-  assert.match(io.read().stdout, /^0\.2\.0\n$/);
+  assert.match(io.read().stdout, /^0\.2\.1\n$/);
 });
 
 test("run rejects unknown list options", async () => {
